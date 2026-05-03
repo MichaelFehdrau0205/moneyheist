@@ -51,6 +51,8 @@ window.HEIST_DATA = {
       // Position on the SVG NYC map, expressed as 0–1 of a 1200x600 viewbox
       mapX: 0.52,
       mapY: 0.58,
+      lng: -73.9903,
+      lat: 40.7340,
     },
     {
       name: "TIMES SQUARE · BROADWAY ISLAND",
@@ -58,6 +60,8 @@ window.HEIST_DATA = {
       coords: "40.7580° N · 73.9855° W",
       mapX: 0.50,
       mapY: 0.46,
+      lng: -73.9855,
+      lat: 40.7580,
     },
     {
       name: "GRAND CENTRAL · MAIN CONCOURSE",
@@ -65,6 +69,8 @@ window.HEIST_DATA = {
       coords: "40.7527° N · 73.9772° W",
       mapX: 0.55,
       mapY: 0.49,
+      lng: -73.9772,
+      lat: 40.7527,
     },
     {
       name: "FEDERAL RESERVE · LIBERTY ST",
@@ -72,6 +78,8 @@ window.HEIST_DATA = {
       coords: "40.7080° N · 74.0086° W",
       mapX: 0.46,
       mapY: 0.78,
+      lng: -74.0086,
+      lat: 40.7080,
     },
     {
       name: "MET MUSEUM · GREEK & ROMAN WING",
@@ -79,6 +87,8 @@ window.HEIST_DATA = {
       coords: "40.7794° N · 73.9632° W",
       mapX: 0.58,
       mapY: 0.31,
+      lng: -73.9632,
+      lat: 40.7794,
     },
   ],
 
