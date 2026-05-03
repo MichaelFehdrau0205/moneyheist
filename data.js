@@ -124,11 +124,12 @@ window.HEIST_DATA = {
   ],
 
   risk: {
-    score: 42,
+    score: 75,
     sub: [
-      { label: "DETECTION", value: 28 },
-      { label: "INTERCEPT", value: 51 },
-      { label: "FALLOUT", value: 47 },
+      { label: "DETECTION",    value: 60 },
+      { label: "DIFFICULTY",   value: 80 },
+      { label: "COORDINATION", value: 70 },
+      { label: "STYLE",        value: 90 },
     ],
   },
 
