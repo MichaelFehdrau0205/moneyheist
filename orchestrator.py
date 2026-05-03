@@ -18,7 +18,7 @@ from __future__ import annotations
 from typing import AsyncGenerator
 
 from agents import Crew, build_crew
-from prompts import PROFESSOR_PLAN_INSTRUCTIONS
+from prompts import DEMO_QUOTE, PROFESSOR_PLAN_INSTRUCTIONS
 from schema import HeistPlan, Message
 
 
@@ -79,7 +79,7 @@ async def run_heist(target: str) -> AsyncGenerator[Message, None]:
         f'{_frame(target, transcript)}\n\n{PROFESSOR_PLAN_INSTRUCTIONS}',
         response_schema=HeistPlan,
     )
-    plan: HeistPlan | None = await plan_reply.content(retries=1)
+    plan: HeistPlan | None = await plan_reply.content(retries=2)
     if plan is None:
         raise RuntimeError("Professor failed to emit a structured plan.")
 
@@ -101,8 +101,10 @@ async def run_heist(target: str) -> AsyncGenerator[Message, None]:
         type="risk_score",
     )
 
+    # Safe fallback: if the Professor returned an empty closing line, use Paula's DEMO_QUOTE.
+    closing = (plan.professors_final_word or "").strip() or DEMO_QUOTE
     yield Message(
         agent="The Professor",
-        content=plan.professors_final_word,
+        content=closing,
         type="final_word",
     )

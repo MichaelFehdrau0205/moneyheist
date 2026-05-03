@@ -1,7 +1,7 @@
 """Locked schemas — message wire format and structured plan output.
 
 The message schema is the contract with Michael (backend SSE).
-The HeistPlan schema is the contract with Paula (rubric) and Jonel (render).
+HeistPlan mirrors schema/plan_schema.json (Paula's spec) — keep them in sync.
 Don't change without telling the team.
 """
 
@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 MessageType = Literal["speaking", "plan_section", "risk_score", "final_word"]
 AgentName = Literal["The Professor", "Brooklyn", "Detroit", "Houston"]
+PhaseTimestamp = Literal["T-04:00", "T-02:00", "T+00:00", "T+02:00", "T+04:00"]
 
 
 class Message(BaseModel):
@@ -26,24 +27,28 @@ class Message(BaseModel):
 
 
 class Phase(BaseModel):
-    timestamp: str  # "T-04:00" through "T+04:00"
-    title: str
+    timestamp: PhaseTimestamp
+    title: str = Field(max_length=40)
     agent: AgentName
-    detail: str
+    detail: str = Field(max_length=120)
 
 
 class RiskScore(BaseModel):
-    total: float
-    detection: int
-    difficulty: int
-    coordination: int
-    style: int
+    total: float = Field(ge=0, le=10)
+    detection: int = Field(ge=0, le=10)
+    difficulty: int = Field(ge=0, le=10)
+    coordination: int = Field(ge=0, le=10)
+    style: int = Field(ge=0, le=10)
 
 
 class HeistPlan(BaseModel):
-    """Final structured plan emitted by The Professor at synthesis time."""
+    """Final structured plan emitted by The Professor at synthesis time.
+
+    Mirrors schema/plan_schema.json. Phases must be exactly 5 in chronological
+    order: T-04:00, T-02:00, T+00:00, T+02:00, T+04:00.
+    """
 
     target: str
-    phases: list[Phase]
+    phases: list[Phase] = Field(min_length=5, max_length=5)
     risk_score: RiskScore
-    professors_final_word: str
+    professors_final_word: str = Field(max_length=200)
