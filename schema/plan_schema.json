@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HeistPlan",
+  "description": "The Professor's final synthesis output. Emitted by Manny, rendered by Jonel. Max 120 chars per phase detail.",
+  "type": "object",
+  "required": ["target", "phases", "risk_score", "professors_final_word"],
+  "properties": {
+    "target": {
+      "type": "string",
+      "description": "The audience-named target, as entered.",
+      "example": "Trader Joe's, Union Square"
+    },
+    "phases": {
+      "type": "array",
+      "description": "Exactly 5 phases in chronological order.",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "required": ["timestamp", "title", "agent", "detail"],
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "enum": ["T-04:00", "T-02:00", "T+00:00", "T+02:00", "T+04:00"],
+            "description": "Fixed timeline slot."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 40,
+            "description": "Short cinematic phase title."
+          },
+          "agent": {
+            "type": "string",
+            "enum": ["The Professor", "Brooklyn", "Detroit", "Houston"],
+            "description": "Agent responsible for this phase."
+          },
+          "detail": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "One sentence. Pulpy, narrative. No operational instructions."
+          }
+        }
+      }
+    },
+    "risk_score": {
+      "type": "object",
+      "required": ["total", "detection", "difficulty", "coordination", "style"],
+      "properties": {
+        "total": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Simple average of the four sub-scores, one decimal place."
+        },
+        "detection": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "difficulty": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "coordination": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "style": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        }
+      }
+    },
+    "professors_final_word": {
+      "type": "string",
+      "description": "One closing quote in The Professor's voice. Italic serif in the UI. Selected from the quote library or generated.",
+      "maxLength": 200
+    }
+  },
+  "examples": [
+    {
+      "target": "Trader Joe's, Union Square",
+      "phases": [
+        {
+          "timestamp": "T-04:00",
+          "title": "Eyes on the prize",
+          "agent": "Houston",
+          "detail": "Houston maps the shift rotation — the friendly cashier on register 3 clocks out at noon."
+        },
+        {
+          "timestamp": "T-02:00",
+          "title": "Lights out",
+          "agent": "Brooklyn",
+          "detail": "Brooklyn finds the camera grid's blind spot in under a minute. Three pixels wide. Perfect."
+        },
+        {
+          "timestamp": "T+00:00",
+          "title": "Showtime",
+          "agent": "The Professor",
+          "detail": "The Professor gives the word. The clock starts. Everything that follows was decided hours ago."
+        },
+        {
+          "timestamp": "T+02:00",
+          "title": "Wheels up",
+          "agent": "Detroit",
+          "detail": "Detroit has the van running on 14th Street. Forty-five seconds from door to moving."
+        },
+        {
+          "timestamp": "T+04:00",
+          "title": "Ghost",
+          "agent": "Detroit",
+          "detail": "Four minutes after showtime, the crew is on the FDR. Nobody saw a thing."
+        }
+      ],
+      "risk_score": {
+        "total": 7.5,
+        "detection": 6,
+        "difficulty": 8,
+        "coordination": 7,
+        "style": 9
+      },
+      "professors_final_word": "They'll spend years asking how. The answer was never in the vault. It was in the timing."
+    }
+  ]
+}
