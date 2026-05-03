@@ -260,7 +260,71 @@ function PlanGrid({ plan, visibleCount }) {
 }
 
 // ---------- Risk score ----------
-function RiskScore({ data, stamp }) {
+function RiskCardBody({ data, stamp }) {
+  const score = typeof data.score === "number" ? Math.round(data.score) : data.score;
+  return (
+    <div className="rs-body">
+      <div className={"rs-num " + (stamp ? "rs-stamp" : "")}>
+        <div className="rs-num-val">{score}</div>
+        <div className="rs-num-unit mono">/ 100</div>
+      </div>
+      <div className="rs-bars">
+        {data.sub.map((s) => (
+          <div key={s.label} className="rs-bar">
+            <div className="rs-bar-row">
+              <span className="rs-bar-label mono">{s.label}</span>
+              <span className="rs-bar-val mono">{String(Math.round(s.value)).padStart(2, "0")}</span>
+            </div>
+            <div className="rs-bar-track">
+              <div
+                className="rs-bar-fill"
+                style={{ width: stamp ? Math.round(s.value) + "%" : "0%" }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RiskScore({ data, dataAlt, stamp, onPathSelected, selectedPath }) {
+  if (dataAlt) {
+    return (
+      <section className="rs rs-fork-section">
+        <div className="row-head">
+          <span className="rh-label mono">▸ RISK · TWO PATHS</span>
+          <span className="rh-meta mono">AUDIENCE · CHOOSE ONE</span>
+        </div>
+        <div className="rs-fork">
+          <div className={"rs-fork-card rs-fork-a " + (selectedPath === "A" ? "rs-fork-picked" : "") + (selectedPath === "B" ? "rs-fork-dimmed" : "")}>
+            <div className="rs-fork-head mono">PATH A · RUN THE HEIST</div>
+            <RiskCardBody data={data} stamp={stamp} />
+          </div>
+          <div className={"rs-fork-card rs-fork-b " + (selectedPath === "B" ? "rs-fork-picked" : "") + (selectedPath === "A" ? "rs-fork-dimmed" : "")}>
+            <div className="rs-fork-head mono">PATH B · RECRUIT 5TH</div>
+            <RiskCardBody data={dataAlt} stamp={stamp} />
+          </div>
+        </div>
+        <div className="rs-fork-buttons">
+          <button
+            className="rs-fork-btn rs-fork-btn-a mono"
+            disabled={!!selectedPath}
+            onClick={() => onPathSelected && onPathSelected("A")}
+          >
+            ▸ EXECUTE PATH A
+          </button>
+          <button
+            className="rs-fork-btn rs-fork-btn-b mono"
+            disabled={!!selectedPath}
+            onClick={() => onPathSelected && onPathSelected("B")}
+          >
+            ▸ EXECUTE PATH B
+          </button>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="rs">
       <div className="row-head">
@@ -294,11 +358,14 @@ function RiskScore({ data, stamp }) {
 }
 
 // ---------- Final card ----------
-function FinalCard({ quote, professorQuote, show }) {
+function FinalCard({ quote, professorQuote, show, selectedPath }) {
   const lines = quote.split("\n");
   return (
     <section className={"fc " + (show ? "fc-in" : "")}>
       <div className="fc-label mono gold">— THE PROFESSOR —</div>
+      {selectedPath === "B" && (
+        <p className="fc-pivot-line">"With one more in the crew, the equation changes. Here is what we do instead."</p>
+      )}
       {professorQuote && (
         <p className="fc-professor-quote">"{professorQuote}"</p>
       )}

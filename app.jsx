@@ -1,5 +1,13 @@
 // Main app — stitches stages together with state + timing
-const { useEffect, useState, useRef, useCallback } = React;
+const { useEffect, useState, useRef, useCallback, useMemo } = React;
+
+// Master switch for the parallel-paths risk fork. Flip false to fully disable
+// the feature (alongside the runtime tweak — both must be on for fork mode).
+const ENABLE_PATH_FORK = true;
+
+// Per-category deltas applied to Path A to derive Path B ("recruit a 5th").
+const PATH_FORK_DELTAS = { DETECTION: -15, DIFFICULTY: -10, COORDINATION: 25, STYLE: 10 };
+const PATH_FORK_AUTO_MS = 8000;
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "typewriterSpeed": 22,
@@ -8,7 +16,8 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "showStageRail": false,
   "accent": "red",
   "density": "comfortable",
-  "autoPlay": true
+  "autoPlay": true,
+  "enablePathFork": true
 }/*EDITMODE-END*/;
 
 // Backend wiring. Without a `?backend=` query param the app runs on the stub
@@ -34,6 +43,7 @@ function App() {
   const [planVisible, setPlanVisible] = useState(0);
   const [riskStamp, setRiskStamp] = useState(false);
   const [finalShow, setFinalShow] = useState(false);
+  const [selectedPath, setSelectedPath] = useState(null);
 
   // Stream-driven buffers (populated by handleMessage). When empty, components
   // fall back to data.js — preserves jumpTo helpers in the tweaks panel.
@@ -137,6 +147,7 @@ function App() {
     setDebateIdle(false);
     setPlanAnimationDone(false);
     setRiskStampDone(false);
+    setSelectedPath(null);
     consumeStream(t);
   }, [resolveTarget, consumeStream]);
 
@@ -146,6 +157,18 @@ function App() {
   const riskData = riskOverride || data.risk;
   const finalProfessorQuote = finalQuoteOverride || data.professorQuote;
   const isStreamMode = debateBuffer.length > 0 || planBuffer.length > 0;
+
+  // Path-fork: derive Path B ("recruit a 5th") from Path A by per-category deltas.
+  const forkActive = ENABLE_PATH_FORK && tweaks.enablePathFork;
+  const riskAlternative = useMemo(() => {
+    if (!forkActive || !riskData || !Array.isArray(riskData.sub)) return null;
+    const subAlt = riskData.sub.map((s) => ({
+      label: s.label,
+      value: Math.max(0, Math.min(100, s.value + (PATH_FORK_DELTAS[s.label] || 0))),
+    }));
+    const score = subAlt.reduce((acc, s) => acc + s.value, 0) / subAlt.length;
+    return { score, sub: subAlt };
+  }, [forkActive, riskData]);
 
   // Crew slide-in
   useEffect(() => {
@@ -222,22 +245,38 @@ function App() {
   }, [phase, planAnimationDone, riskOverride, isStreamMode]);
 
   // Risk stamp — fires the stamp animation, then marks done.
+  // Reset path selection on every risk-phase entry so jumpTo replays cleanly.
   useEffect(() => {
     if (phase !== "risk") return;
     setRiskStamp(false);
     setRiskStampDone(false);
+    setSelectedPath(null);
     const t1 = setTimeout(() => setRiskStamp(true), 250);
     const t2 = setTimeout(() => setRiskStampDone(true), 1800);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [phase]);
 
   // Risk stamp done AND final quote ready → advance to final.
+  // When fork is active, also wait for the audience to pick a path (or for
+  // the auto-select fallback below to fire).
   useEffect(() => {
     if (phase !== "risk") return;
     if (!riskStampDone) return;
     if (!finalQuoteOverride && isStreamMode) return;
+    if (forkActive && riskAlternative && !selectedPath) return;
     setPhase("final");
-  }, [phase, riskStampDone, finalQuoteOverride, isStreamMode]);
+  }, [phase, riskStampDone, finalQuoteOverride, isStreamMode, forkActive, riskAlternative, selectedPath]);
+
+  // Auto-select Path A if the audience hasn't clicked within 8s of stamp done.
+  // Protects the demo if Manny doesn't get to "click left" in his pitch.
+  useEffect(() => {
+    if (!forkActive) return;
+    if (phase !== "risk") return;
+    if (!riskStampDone) return;
+    if (selectedPath) return;
+    const t = setTimeout(() => setSelectedPath((p) => p || "A"), PATH_FORK_AUTO_MS);
+    return () => clearTimeout(t);
+  }, [forkActive, phase, riskStampDone, selectedPath]);
 
   // Final show
   useEffect(() => {
@@ -270,6 +309,7 @@ function App() {
       setDebateIdle(false);
       setPlanAnimationDone(false);
       setRiskStampDone(false);
+      setSelectedPath(null);
       speakingCountRef.current = 0;
       streamRunningRef.current = false;
       return;
@@ -340,13 +380,31 @@ function App() {
       )}
 
       {(phase === "plan" || phase === "risk" || phase === "final") && (
-        <div className="bottom-row">
-          <PlanGrid plan={planPhases} visibleCount={planVisible} />
-          <RiskScore data={riskData} stamp={riskStamp} />
-        </div>
+        forkActive ? (
+          // Fork mode: plan takes full width; fork RiskScore mounts only at the
+          // risk/final phase as its own full-width row below — never inside the
+          // 1fr sidebar slot. Avoids the layout-flash during plan→risk transition.
+          <>
+            <PlanGrid plan={planPhases} visibleCount={planVisible} />
+            {(phase === "risk" || phase === "final") && riskAlternative && (
+              <RiskScore
+                data={riskData}
+                dataAlt={riskAlternative}
+                stamp={riskStamp}
+                selectedPath={selectedPath}
+                onPathSelected={(p) => setSelectedPath((prev) => prev || p)}
+              />
+            )}
+          </>
+        ) : (
+          <div className="bottom-row">
+            <PlanGrid plan={planPhases} visibleCount={planVisible} />
+            <RiskScore data={riskData} stamp={riskStamp} />
+          </div>
+        )
       )}
 
-      {phase === "final" && <FinalCard quote={data.quote} professorQuote={finalProfessorQuote} show={finalShow} />}
+      {phase === "final" && <FinalCard quote={data.quote} professorQuote={finalProfessorQuote} show={finalShow} selectedPath={selectedPath} />}
 
       <div className="heist-disclaimer-footer">{data.disclaimerFooter}</div>
 
@@ -396,6 +454,11 @@ function App() {
             label="Stage rail"
             value={tweaks.showStageRail}
             onChange={(v) => setTweak("showStageRail", v)}
+          />
+          <window.TweakToggle
+            label="Path fork (Path A / Path B)"
+            value={tweaks.enablePathFork}
+            onChange={(v) => setTweak("enablePathFork", v)}
           />
         </window.TweakSection>
         <window.TweakSection title="Demo">
