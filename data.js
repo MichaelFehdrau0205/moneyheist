@@ -45,14 +45,32 @@ window.HEIST_DATA = {
 
   targets: [
     {
-      name: "TRADER JOE'S · UNION SQUARE",
-      address: "142 E 14TH ST, NEW YORK NY 10003",
-      coords: "40.7340° N · 73.9903° W",
+      name: "TRADER JOE'S, UNION SQUARE",
+      address: "142 E 14TH ST, NEW YORK, NY 10003",
+      coords: "40.7338° N · 73.9897° W",
       // Position on the SVG NYC map, expressed as 0–1 of a 1200x600 viewbox
-      mapX: 0.52,
-      mapY: 0.58,
-      lng: -73.9903,
-      lat: 40.7340,
+      mapX: 0.505,
+      mapY: 0.662,
+      lng: -73.9897,
+      lat: 40.7338,
+    },
+    {
+      name: "STATUE OF LIBERTY, NEW YORK HARBOR",
+      address: "LIBERTY ISLAND, NEW YORK, NY 10004",
+      coords: "40.6892° N · 74.0445° W",
+      mapX: 0,
+      mapY: 1,
+      lng: -74.0445,
+      lat: 40.6892,
+    },
+    {
+      name: "FEDERAL RESERVE BANK OF NEW YORK",
+      address: "33 LIBERTY ST, NEW YORK, NY 10045",
+      coords: "40.7076° N · 74.0098° W",
+      mapX: 0.170,
+      mapY: 0.924,
+      lng: -74.0098,
+      lat: 40.7076,
     },
     {
       name: "TIMES SQUARE · BROADWAY ISLAND",
@@ -71,15 +89,6 @@ window.HEIST_DATA = {
       mapY: 0.49,
       lng: -73.9772,
       lat: 40.7527,
-    },
-    {
-      name: "FEDERAL RESERVE · LIBERTY ST",
-      address: "33 LIBERTY ST, NEW YORK NY 10045",
-      coords: "40.7080° N · 74.0086° W",
-      mapX: 0.46,
-      mapY: 0.78,
-      lng: -74.0086,
-      lat: 40.7080,
     },
     {
       name: "MET MUSEUM · GREEK & ROMAN WING",
