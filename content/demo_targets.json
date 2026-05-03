@@ -1,0 +1,36 @@
+{
+  "targets": [
+    {
+      "label": "Trader Joe's, Union Square",
+      "description": "The funny one. Relatable mark, absurd ambition. Audience always laughs.",
+      "address": "142 E 14th St, New York, NY 10003",
+      "lat": 40.7338,
+      "lng": -73.9897,
+      "category": "funny",
+      "demo_default": true,
+      "notes": "Use this for all dry runs and as the fallback.json target. Best-tested output."
+    },
+    {
+      "label": "Statue of Liberty, New York Harbor",
+      "description": "The iconic one. Big swing, cinematic scale. Judges love the audacity.",
+      "address": "Liberty Island, New York, NY 10004",
+      "lat": 40.6892,
+      "lng": -74.0445,
+      "category": "iconic",
+      "demo_default": false,
+      "notes": "High style score guaranteed. Detroit's getaway is by water — agents should pick this up."
+    },
+    {
+      "label": "Federal Reserve Bank of New York",
+      "description": "The absurd one. The most heist-appropriate building in the city. Audience expects it to be impossible.",
+      "address": "33 Liberty St, New York, NY 10045",
+      "lat": 40.7076,
+      "lng": -74.0098,
+      "category": "absurd",
+      "demo_default": false,
+      "notes": "Highest difficulty score. Professor should acknowledge the impossibility — plays well as comedy."
+    }
+  ],
+  "vetting_notes": "All three targets tested against agent refusal guardrails. None trigger real-person or real-residential-address refusals. All produce flat-plan risk scores above 6.0. Federal Reserve may generate longer agent turns — watch the timing window.",
+  "geocode_source": "Mapbox Geocoding API (pre-cached). Jonel: load this file as the lookup table before falling back to live geocoding."
+}
