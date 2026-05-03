@@ -11,9 +11,12 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "autoPlay": true
 }/*EDITMODE-END*/;
 
-// Backend wiring — flip USE_STUB and set BACKEND_URL when Michael's SSE is live.
-const BACKEND_URL = null;
-const USE_STUB = true;
+// Backend wiring. Without a `?backend=` query param the app runs on the stub
+// generator. With `?backend=https://<host>` it consumes SSE from that host.
+// Lets us flip live/stub on the deployed URL without a redeploy.
+const _URL_PARAMS = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+const BACKEND_URL = _URL_PARAMS ? _URL_PARAMS.get("backend") : null;
+const USE_STUB = !BACKEND_URL;
 
 const COUNTDOWN_BY_IDX = ["T-04:00", "T-03:00", "T-02:00", "T-01:00"];
 function deriveCountdown(idx) {
@@ -69,14 +72,14 @@ function App() {
       setDebateBuffer((b) => [...b, entry]);
       if (idx === 0) setPhase("crew");
     } else if (msg.type === "plan_section") {
-      const normalized = window.normalizePlanPhase(msg.payload);
+      const normalized = window.normalizePlanPhase(msg.payload || msg);
       if (!normalized) return;
       setPlanBuffer((b) => {
         if (b.length === 0) setPhase("plan");
         return [...b, normalized];
       });
     } else if (msg.type === "risk_score") {
-      const normalized = window.normalizeRiskScore(msg.payload);
+      const normalized = window.normalizeRiskScore(msg.payload || msg);
       setRiskOverride(normalized);
       setPhase("risk");
     } else if (msg.type === "final_word") {

@@ -1,3 +1,6 @@
 ag2[openai]
 python-dotenv
 pydantic
+fastapi
+sse-starlette
+uvicorn[standard]
