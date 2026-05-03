@@ -193,6 +193,8 @@ function App() {
 
       {phase === "final" && <FinalCard quote={data.quote} show={finalShow} />}
 
+      <div className="heist-disclaimer-footer">{data.disclaimerFooter}</div>
+
       {tweaks.showStageRail && <StageRail phase={phase} onJump={jumpTo} />}
 
       {/* Tweaks panel */}

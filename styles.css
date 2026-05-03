@@ -405,3 +405,23 @@ html[data-density="compact"] .tr-name { font-size: 48px; }
 html[data-density="compact"] .cc-name { font-size: 24px; }
 html[data-density="compact"] .rs-num-val { font-size: 76px; }
 html[data-density="compact"] .phase { padding: 10px 4px; }
+
+/* ---------- Paula's disclaimers ---------- */
+.fc-disclaimer {
+  font-family: "Inter", serif;
+  font-style: italic;
+  font-size: 11px;
+  color: var(--t-muted);
+  text-align: center;
+  line-height: 1.55;
+  margin: 4px auto;
+  max-width: 720px;
+}
+
+.heist-disclaimer-footer {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  color: var(--t-dim);
+  text-align: center;
+  padding: 16px;
+}

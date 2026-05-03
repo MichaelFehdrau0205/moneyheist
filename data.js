@@ -132,5 +132,7 @@ window.HEIST_DATA = {
     ],
   },
 
-  quote: "This plan exists only in narrative form. No laws were broken in the rehearsal of this rehearsal. The crew is fictional. The city is not.",
+  quote: "This plan exists only in narrative form.\nThe Heist Crew is a fictional simulation built with AG2 multi-agent AI.\nNo vaults were harmed. No Trader Joe's was robbed.",
+
+  disclaimerFooter: "This plan exists only in narrative form. The crew is fictional. The targets are inert. Don't actually rob places.",
 };

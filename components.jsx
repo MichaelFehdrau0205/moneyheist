@@ -295,10 +295,13 @@ function RiskScore({ data, stamp }) {
 
 // ---------- Final card ----------
 function FinalCard({ quote, show }) {
+  const lines = quote.split("\n");
   return (
     <section className={"fc " + (show ? "fc-in" : "")}>
       <div className="fc-label mono gold">— THE PROFESSOR —</div>
-      <p className="fc-quote">"{quote}"</p>
+      {lines.map((line, i) => (
+        <p key={i} className="fc-disclaimer">{line}</p>
+      ))}
       <div className="fc-foot mono">
         <span>END · TRANSMISSION</span>
         <span className="dim">FILE 04 · CLOSED</span>
