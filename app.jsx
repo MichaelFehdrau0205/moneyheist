@@ -42,6 +42,12 @@ function App() {
   const [riskOverride, setRiskOverride] = useState(null);
   const [finalQuoteOverride, setFinalQuoteOverride] = useState(null);
 
+  // "Idle" flags mark animation completion — used to defer phase transitions in
+  // stream mode so the next phase doesn't start mid-animation.
+  const [debateIdle, setDebateIdle] = useState(false);
+  const [planAnimationDone, setPlanAnimationDone] = useState(false);
+  const [riskStampDone, setRiskStampDone] = useState(false);
+
   const speakingCountRef = useRef(0);
   const streamRunningRef = useRef(false);
   const lockedRef = useRef(false);
@@ -74,18 +80,15 @@ function App() {
     } else if (msg.type === "plan_section") {
       const normalized = window.normalizePlanPhase(msg.payload || msg);
       if (!normalized) return;
-      setPlanBuffer((b) => {
-        if (b.length === 0) setPhase("plan");
-        return [...b, normalized];
-      });
+      // Buffer only — phase transition is gated by debate-idle watcher below.
+      setPlanBuffer((b) => [...b, normalized]);
     } else if (msg.type === "risk_score") {
-      const normalized = window.normalizeRiskScore(msg.payload || msg);
-      setRiskOverride(normalized);
-      setPhase("risk");
+      // Buffer only — gated by plan-animation-done watcher.
+      setRiskOverride(window.normalizeRiskScore(msg.payload || msg));
     } else if (msg.type === "final_word") {
+      // Buffer only — gated by risk-stamp-done watcher.
       setFinalQuoteOverride(msg.content);
       setFinalShow(true);
-      setPhase("final");
     }
   }, []);
 
@@ -131,6 +134,9 @@ function App() {
     setPlanBuffer([]);
     setRiskOverride(null);
     setFinalQuoteOverride(null);
+    setDebateIdle(false);
+    setPlanAnimationDone(false);
+    setRiskStampDone(false);
     consumeStream(t);
   }, [resolveTarget, consumeStream]);
 
@@ -164,40 +170,74 @@ function App() {
     const next = debateIdx + 1;
     setTimeout(() => {
       if (next >= debateMessages.length) {
-        // Stream mode: plan transition is message-driven. jumpTo mode: auto-advance.
+        // End of current buffer. Mark idle; advance handled by watchers.
+        setDebateIdle(true);
         if (!isStreamMode) setPhase("plan");
       } else {
+        setDebateIdle(false);
         setDebateIdx(next);
       }
     }, tweaks.lineGapMs);
   }, [debateIdx, debateMessages.length, tweaks.lineGapMs, isStreamMode]);
 
-  // Plan reveal
+  // When buffer grows past current debateIdx and we were idle, advance the typewriter.
+  useEffect(() => {
+    if (phase !== "debate") return;
+    if (!debateIdle) return;
+    if (debateIdx + 1 < debateMessages.length) {
+      setDebateIdle(false);
+      setDebateIdx(debateIdx + 1);
+    }
+  }, [debateMessages.length, phase, debateIdx, debateIdle]);
+
+  // When debate is idle AND plan data is ready, advance to plan.
+  useEffect(() => {
+    if (phase !== "debate") return;
+    if (!debateIdle) return;
+    if (planBuffer.length === 0 && isStreamMode) return;
+    setPhase("plan");
+  }, [phase, debateIdle, planBuffer.length, isStreamMode]);
+
+  // Plan reveal — animate up to 5 (full plan size) on phase entry only.
+  // Doesn't re-run on planBuffer growth, so items appear smoothly as they arrive.
   useEffect(() => {
     if (phase !== "plan") return;
     setPlanVisible(0);
+    setPlanAnimationDone(false);
+    const total = 5;
     const timers = [];
-    const total = planPhases.length;
     for (let i = 1; i <= total; i++) {
       timers.push(setTimeout(() => setPlanVisible(i), i * 320));
     }
-    if (!isStreamMode) {
-      timers.push(setTimeout(() => setPhase("risk"), total * 320 + 600));
-    }
+    timers.push(setTimeout(() => setPlanAnimationDone(true), total * 320 + 600));
     return () => timers.forEach(clearTimeout);
-  }, [phase, planPhases.length, isStreamMode]);
+  }, [phase]);
 
-  // Risk stamp
+  // Plan animation done AND risk data ready → advance to risk.
+  useEffect(() => {
+    if (phase !== "plan") return;
+    if (!planAnimationDone) return;
+    if (!riskOverride && isStreamMode) return;
+    setPhase("risk");
+  }, [phase, planAnimationDone, riskOverride, isStreamMode]);
+
+  // Risk stamp — fires the stamp animation, then marks done.
   useEffect(() => {
     if (phase !== "risk") return;
     setRiskStamp(false);
+    setRiskStampDone(false);
     const t1 = setTimeout(() => setRiskStamp(true), 250);
-    const timers = [t1];
-    if (!isStreamMode) {
-      timers.push(setTimeout(() => setPhase("final"), 1800));
-    }
-    return () => timers.forEach(clearTimeout);
-  }, [phase, isStreamMode]);
+    const t2 = setTimeout(() => setRiskStampDone(true), 1800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [phase]);
+
+  // Risk stamp done AND final quote ready → advance to final.
+  useEffect(() => {
+    if (phase !== "risk") return;
+    if (!riskStampDone) return;
+    if (!finalQuoteOverride && isStreamMode) return;
+    setPhase("final");
+  }, [phase, riskStampDone, finalQuoteOverride, isStreamMode]);
 
   // Final show
   useEffect(() => {
@@ -227,6 +267,9 @@ function App() {
       setPlanBuffer([]);
       setRiskOverride(null);
       setFinalQuoteOverride(null);
+      setDebateIdle(false);
+      setPlanAnimationDone(false);
+      setRiskStampDone(false);
       speakingCountRef.current = 0;
       streamRunningRef.current = false;
       return;
@@ -285,7 +328,11 @@ function App() {
 
       {(phase === "debate" || phase === "plan" || phase === "risk" || phase === "final") && (
         <DebatePanel
-          messages={debateMessages.slice(0, debateIdx + 1 || debateMessages.length)}
+          messages={
+            phase === "debate"
+              ? debateMessages.slice(0, debateIdx + 1 || debateMessages.length)
+              : debateMessages
+          }
           crew={data.crew}
           activeIdx={phase === "debate" ? debateIdx : -1}
           onLineDone={onLineDone}
