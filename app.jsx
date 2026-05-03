@@ -15,8 +15,8 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 // generator. With `?backend=https://<host>` it consumes SSE from that host.
 // Lets us flip live/stub on the deployed URL without a redeploy.
 const _URL_PARAMS = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
-const BACKEND_URL = _URL_PARAMS ? _URL_PARAMS.get("backend") : null;
-const USE_STUB = !BACKEND_URL;
+const BACKEND_URL = (_URL_PARAMS && _URL_PARAMS.get("backend")) || "http://localhost:8000";
+const USE_STUB = false;
 
 const COUNTDOWN_BY_IDX = ["T-04:00", "T-03:00", "T-02:00", "T-01:00"];
 function deriveCountdown(idx) {
