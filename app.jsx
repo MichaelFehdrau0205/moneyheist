@@ -191,7 +191,7 @@ function App() {
         </div>
       )}
 
-      {phase === "final" && <FinalCard quote={data.quote} show={finalShow} />}
+      {phase === "final" && <FinalCard quote={data.quote} professorQuote={data.professorQuote} show={finalShow} />}
 
       <div className="heist-disclaimer-footer">{data.disclaimerFooter}</div>
 

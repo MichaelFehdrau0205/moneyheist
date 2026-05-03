@@ -407,6 +407,18 @@ html[data-density="compact"] .rs-num-val { font-size: 76px; }
 html[data-density="compact"] .phase { padding: 10px 4px; }
 
 /* ---------- Paula's disclaimers ---------- */
+.fc-professor-quote {
+  font-family: "Bebas Neue", sans-serif;
+  font-style: italic;
+  font-size: 24px;
+  letter-spacing: 0.04em;
+  color: var(--t-pri);
+  text-align: center;
+  line-height: 1.25;
+  margin: 14px auto 18px;
+  max-width: 720px;
+}
+
 .fc-disclaimer {
   font-family: "Inter", serif;
   font-style: italic;
