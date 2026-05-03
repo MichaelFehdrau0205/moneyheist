@@ -1,0 +1,24 @@
+# Backend ships via Michael's ngrok host — don't deploy to Vercel
+*.py
+prompts/
+schema/
+content/
+requirements.txt
+.env.example
+
+# Local dev artifacts
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.local
+.claude/
+.idea/
+.vscode/
+
+# Source archives and team docs that don't need to ship
+PRD-The-Heist-Crew.md
+BUILD-PLAN.md
+Money Heist.zip
